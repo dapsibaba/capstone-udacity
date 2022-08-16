@@ -1,0 +1,104 @@
+Description: >
+  Creation of EKS node group aka worker nodes
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: udacitycapstone
+  
+  DesiredSize:
+    Description: How many instances should be created.
+    Default: 3
+    Type: Integer
+ 
+  MinSize:
+    Default: 2
+    Type: Integer
+
+  MaxSize:
+    Default: 4
+    Type: Integer
+
+  KeyPairName:
+    Description: EC2 key pair name (for SSH-access to the worker node instances)
+    Type: String
+    Default: udacity
+
+  # NodeGroupAMI:
+  #   Description: Amazon EKS-Optimized Amazon Linux AMI (This AMI already has kubectl installed in it)
+  #   Type: String
+  #   Default: ami-0eeeef929db40543c
+
+Resources:
+
+  EKSNodeGroupRole:
+    Type: AWS::IAM::Role
+    Description: >
+      https://docs.aws.amazon.com/eks/latest/userguide/create-node-role.html#create-worker-node-role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy               
+
+  EKSNodeGroup:
+    Type: AWS::EKS::Nodegroup
+    Description: |
+      https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-nodegroup.html#cfn-eks-nodegroup-nodegroupname
+      https://docs.aws.amazon.com/eks/latest/userguide/launch-workers.html
+    Properties:
+    # the cluster name defined in the ekscluster.yml 
+      ClusterName: !Sub ${EnvironmentName}-cluster
+      NodeRole: !GetAtt EKSNodeGroupRole.Arn
+      NodegroupName: !Sub ${EnvironmentName}-nodegroup
+      RemoteAccess:
+        Ec2SshKey: !Ref KeyPairName
+        SourceSecurityGroups: 
+          - !Ref WorkerNodesSecurityGroup
+      ScalingConfig:
+        MinSize: !Ref MinSize
+        MaxSize: !Ref MaxSize
+        DesiredSize: !Ref DesiredSize
+      Subnets:
+        Fn::Split:
+          - ","
+          - Fn::ImportValue: !Sub ${EnvironmentName}-PUB-NETS
+
+  WorkerNodesSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow only http and SSH into worker nodes
+      VpcId:
+        Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+
+Outputs:
+  EKSNodeGroupRole:
+    Description: The node instance role
+    Value: !GetAtt EKSNodeGroupRole.Arn
+    Export:
+      Name: !Sub ${EnvironmentName}-nodeG-Role
+  EKSNodeGroup:
+    Description: EKS Nodegroup
+    Value: !Ref EKSNodeGroup
+    Export:
+      Name: !Sub ${EnvironmentName}-nodeG

@@ -1,0 +1,70 @@
+Description: >
+  Creation of EKS cluster aka control plane
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: udacitycapstone
+
+Resources:
+
+  EKSClusterRole:
+    Type: AWS::IAM::Role
+    Description: >
+      https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+
+  ControlPlaneSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow only http into the control plane from worker node
+      VpcId:
+        Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+
+  EKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Version: "1.22"
+      Name: !Sub ${EnvironmentName}-cluster
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - !Ref ControlPlaneSG.GroupId
+        SubnetIds:
+          Fn::Split:
+            - ","
+            - Fn::ImportValue: !Sub ${EnvironmentName}-PUB-NETS
+
+Outputs:
+  ClusterId:
+    Description: EKS cluster id
+    Value: !Ref EKSCluster
+    Export:
+      Name: !Sub ${EnvironmentName}-EKSCluster
+
+  EKSRoleArn:
+    Description: Role for accessing and creating aws resources
+    Value: !GetAtt EKSClusterRole.Arn
+    Export:
+      Name: !Sub ${EnvironmentName}-EKSRole
