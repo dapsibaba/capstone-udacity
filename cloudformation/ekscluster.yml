@@ -17,8 +17,9 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
+            # This is eks.amazonaws.com AND NOT ec2.amazonaws.com
               Service:
-                - ec2.amazonaws.com
+                - eks.amazonaws.com
             Action:
               - "sts:AssumeRole"
       ManagedPolicyArns:
