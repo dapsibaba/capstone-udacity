@@ -25,22 +25,22 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
 
-  ControlPlaneSG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allow only http into the control plane from worker node
-      VpcId:
-        Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 0
-          ToPort: 65535
-          CidrIp: 0.0.0.0/0
+  # ControlPlaneSG:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: Allow only http into the control plane from worker node
+  #     VpcId:
+  #       Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         FromPort: 80
+  #         ToPort: 80
+  #         CidrIp: 0.0.0.0/0
+  #     SecurityGroupEgress:
+  #       - IpProtocol: tcp
+  #         FromPort: 0
+  #         ToPort: 65535
+  #         CidrIp: 0.0.0.0/0
 
   EKSCluster:
     Type: AWS::EKS::Cluster
@@ -50,8 +50,7 @@ Resources:
       Name: !Sub ${EnvironmentName}-cluster
       RoleArn: !GetAtt EKSClusterRole.Arn
       ResourcesVpcConfig:
-        SecurityGroupIds:
-          - !Ref ControlPlaneSG.GroupId
+        # SecurityGroupIds: !Ref ControlPlaneSG.GroupId
         SubnetIds:
           Fn::Split:
             - ","
