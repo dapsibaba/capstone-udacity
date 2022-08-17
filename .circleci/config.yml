@@ -29,7 +29,7 @@ jobs:
               --tags project=<< parameters.project_id >>\
               --stack-name "<< parameters.project_id >>-eks-cluster" \
               --capabilities CAPABILITY_NAMED_IAM
-        no_output_timeout: 15m
+          no_output_timeout: 15m
       - run:
           name: Create Nodegroup exists
           command: |
