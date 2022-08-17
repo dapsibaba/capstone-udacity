@@ -1,6 +1,6 @@
 Description: >
   Creation of EKS cluster aka control plane
-
+# The EKS cluster was created following the instruction here: https://docs.aws.amazon.com/eks/latest/userguide/getting-started-console.html
 Parameters:
   EnvironmentName:
     Type: String
@@ -45,15 +45,18 @@ Resources:
           FromPort: 53
           ToPort: 53
           CidrIp: 0.0.0.0/0
+      # Allow incoming HTTPS traffic (TCP/443) from worker nodes (for API server)
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
       SecurityGroupEgress:
+      # Allow outgoing kubelet traffic (TCP/10250) to worker nodes
         - IpProtocol: tcp
           FromPort: 10250
           ToPort: 10250
           CidrIp: 0.0.0.0/0
+      # Allow outgoing HTTPS traffic (TCP/443) to worker nodes (for pods running extension API servers)
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
