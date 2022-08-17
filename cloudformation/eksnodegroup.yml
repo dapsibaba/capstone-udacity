@@ -8,7 +8,7 @@ Parameters:
   
   DesiredSize:
     Description: How many instances should be created.
-    Default: 3
+    Default: 2
     Type: Number
  
   MinSize:
@@ -16,18 +16,14 @@ Parameters:
     Type: Number
 
   MaxSize:
-    Default: 4
+    Default: 3
     Type: Number
 
   KeyPairName:
     Description: EC2 key pair name (for SSH-access to the worker node instances)
     Type: AWS::EC2::KeyPair::KeyName
-    Default: udacity
+    Default: ekstutorial_key_pair
 
-  # NodeGroupAMI:
-  #   Description: Amazon EKS-Optimized Amazon Linux AMI (This AMI already has kubectl installed in it)
-  #   Type: String
-  #   Default: ami-0eeeef929db40543c
 
 Resources:
 
@@ -62,8 +58,6 @@ Resources:
       NodegroupName: !Sub ${EnvironmentName}-nodegroup
       RemoteAccess:
         Ec2SshKey: !Ref KeyPairName
-        SourceSecurityGroups: 
-          - !Ref WorkerNodesSecurityGroup
       ScalingConfig:
         MinSize: !Ref MinSize
         MaxSize: !Ref MaxSize
@@ -73,33 +67,6 @@ Resources:
           - ","
           - Fn::ImportValue: !Sub ${EnvironmentName}-PUB-NETS
 
-  WorkerNodesSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allow only http and SSH into worker nodes
-      VpcId:
-        Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 53
-          ToPort: 53
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 10250
-          ToPort: 10250
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
 
 Outputs:
   EKSNodeGroupRole:

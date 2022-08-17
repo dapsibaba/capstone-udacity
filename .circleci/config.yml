@@ -14,31 +14,40 @@ jobs:
           name: Install dependencies
           command: yum install -y tar gzip
       - run:
-          name: Build the networks(VPC, Subnets etc)
+          name: Build the networks(VPC and Subnets etc that meet the EKS requirements)
           command: |
             aws cloudformation deploy \
               --template-file cloudformation/network.yml \
               --tags project=<< parameters.project_id >> \
               --stack-name "<< parameters.project_id >>-networks" \
               --parameter-overrides file://cloudformation/network-parameters.json
+    - run:
+        name: Create EKS Cluster
+        command: |
+          aws cloudformation deploy \
+            --template-file cloudformation/ekscluster.yml \
+            --tags project=<< parameters.project_id >>\
+            --stack-name "<< parameters.project_id >>-eks-cluster" \
+            --capabilities CAPABILITY_NAMED_IAM
+        no_output_timeout: 15m
+    - run:
+        name: Create Nodegroup exists
+        command: |
+          aws cloudformation deploy \
+            --template-file cloudformation/eksnodegroup.yml \
+            --tags project=<< parameters.project_id >> \
+            --stack-name "<< parameters.project_id >>-eks-nodegroup" \
+            --capabilities CAPABILITY_NAMED_IAM
+    - run:
+        name: Create management group
+        command: |
+          aws cloudformation deploy \
+            --template-file cloudformation/ec2management.yml \
+            --tags project=<< parameters.project_id >> \
+            --stack-name "<< parameters.project_id >>-management-instance" \
+            --output text >> ~/checkIfDeployed.txt
+          cat ~/checkIfDeployed.txt
 
-    # - run:
-    #     name: Create EKS Cluster
-    #     command: |
-    #       aws cloudformation deploy \
-    #         --template-file cloudformation/ekscluster.yml \
-    #         --tags project=<< parameters.project_id >>\
-    #         --stack-name "<< parameters.project_id >>-eks-cluster" \
-    #         --capabilities CAPABILITY_NAMED_IAM
-    #     no_output_timeout: 15m
-    # - run:
-    #     name: Create Nodegroup exists
-    #     command: |
-    #       aws cloudformation deploy \
-    #         --template-file cloudformation/eksnodegroup.yml \
-    #         --tags project=<< parameters.project_id >> \
-    #         --stack-name "<< parameters.project_id >>-eks-nodegroup" \
-    #         --capabilities CAPABILITY_NAMED_IAM
 
 workflows:
   workflowname:

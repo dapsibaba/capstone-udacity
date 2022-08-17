@@ -1,0 +1,73 @@
+Description: >
+  capstone management instance to run kubectl commands
+
+Parameters:
+  EnvironmentName:
+    Default: capstoneudacity
+    Type: String
+  EKSoptimizedAMI:
+    Description: Amazon EKS-Optimized Amazon Linux AMI (This AMI already has kubectl installed in it)
+    Type: String
+    Default: ami-0eeeef929db40543c
+  InstanceKeyName:
+    Type: String
+    Default: ekstutorial_key_pair 
+
+Resources:
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub management-${EnvironmentName}
+      GroupDescription: Allow port 22 and port 80.
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  EC2InstancePub1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: !Ref InstanceKeyName
+      ImageId: !Ref EKSoptimizedAMI
+      Tags:
+        - Key: Name
+          Value: !Sub management-${EnvironmentName}
+      BlockDeviceMappings:
+        - DeviceName: "/dev/xvda"
+          Ebs:
+            VolumeSize: "20"
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          GroupSet:
+            - Ref: "InstanceSecurityGroup"
+          SubnetId:
+            Fn::ImportValue: !Sub "${EnvironmentName}-PUB1-SN"
+
+
+  # EC2InstancePub2:
+  #   Type: AWS::EC2::Instance
+  #   Properties:
+  #     InstanceType: t2.micro
+  #     KeyName: !Ref InstanceKeyName
+  #     ImageId: !Ref EKSoptimizedAMI
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Sub management-${EnvironmentName}
+  #     BlockDeviceMappings:
+  #       - DeviceName: "/dev/xvda"
+  #         Ebs:
+  #           VolumeSize: "20"
+  #     NetworkInterfaces:
+  #       - AssociatePublicIpAddress: "true"
+  #         DeviceIndex: "0"
+  #         GroupSet:
+  #           - Ref: "InstanceSecurityGroup"
+  #         SubnetId:
+  #           Fn::ImportValue: !Sub "${EnvironmentName}-PUB2-SN"
