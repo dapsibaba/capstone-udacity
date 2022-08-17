@@ -26,6 +26,7 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
 
   ControlPlaneSG:
+  # https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow only http into the control plane from worker node
@@ -36,17 +37,41 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 10250
+          ToPort: 10250
+          CidrIp: 0.0.0.0/0         
+        - IpProtocol: tcp
+          FromPort: 53
+          ToPort: 53
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
       SecurityGroupEgress:
         - IpProtocol: tcp
-          FromPort: 0
-          ToPort: 65535
+          FromPort: 10250
+          ToPort: 10250
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 53
+          ToPort: 53
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
           CidrIp: 0.0.0.0/0
 
   EKSCluster:
     Type: AWS::EKS::Cluster
     DependsOn: ControlPlaneSG
     Properties:
-      Version: "1.22"
+      Version: "1.23"
       Name: !Sub ${EnvironmentName}-cluster
       RoleArn: !GetAtt EKSClusterRole.Arn
       ResourcesVpcConfig:
