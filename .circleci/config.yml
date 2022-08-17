@@ -13,7 +13,7 @@ jobs:
       - run:
           name: Install dependencies
           command: yum install -y tar gzip
-     - run:
+      - run:
           name: Build the networks(VPC, Subnets etc)
           command: |
             aws cloudformation deploy \
