@@ -34,7 +34,7 @@ Resources:
       RoleArn: !GetAtt myAmazonEKSClusterRole.Arn
       ResourcesVpcConfig:
         SecurityGroupIds:
-          - Fn::ImportValue: ${EnvironmentName}-ControlPlaneSG
+          - Fn::ImportValue: !Sub ${EnvironmentName}-ControlPlaneSG
         SubnetIds:
           Fn::Split:
             - ","
