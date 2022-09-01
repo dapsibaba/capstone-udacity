@@ -79,17 +79,17 @@ Resources:
           Value: 1
 
   PublicSubnet3:
-  Type: AWS::EC2::Subnet
-  Properties:
-    VpcId: !Ref VPC
-    AvailabilityZone: !Select [2, !GetAZs ""]
-    CidrBlock: !Ref PublicSubnet3CIDR
-    MapPublicIpOnLaunch: true
-    Tags:
-      - Key: Name
-        Value: !Sub ${EnvironmentName} Public Subnet (AZ3)
-      - Key: kubernetes.io/role/elb
-        Value: 1
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [2, !GetAZs ""]
+      CidrBlock: !Ref PublicSubnet3CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ3)
+        - Key: kubernetes.io/role/elb
+          Value: 1
 
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
