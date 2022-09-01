@@ -17,21 +17,17 @@ Parameters:
   PublicSubnet3CIDR:
     Type: String
 
-
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudformation-interface.html
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
-      -
-        Label:
+      - Label:
           default: "Network Configuration"
         Parameters:
           - VpcCIDR
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
           - PublicSubnet3CIDR
-
-
 
 Resources:
   VPC:
@@ -67,7 +63,7 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
         - Key: kubernetes.io/role/elb
-          Value: 1 
+          Value: 1
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -80,20 +76,20 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName} Public Subnet (AZ2)
         - Key: kubernetes.io/role/elb
-          Value: 1  
-
-    PublicSubnet3:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [2, !GetAZs ""]
-      CidrBlock: !Ref PublicSubnet3CIDR
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName} Public Subnet (AZ3)
-        - Key: kubernetes.io/role/elb
           Value: 1
+
+  PublicSubnet3:
+  Type: AWS::EC2::Subnet
+  Properties:
+    VpcId: !Ref VPC
+    AvailabilityZone: !Select [2, !GetAZs ""]
+    CidrBlock: !Ref PublicSubnet3CIDR
+    MapPublicIpOnLaunch: true
+    Tags:
+      - Key: Name
+        Value: !Sub ${EnvironmentName} Public Subnet (AZ3)
+      - Key: kubernetes.io/role/elb
+        Value: 1
 
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
@@ -129,14 +125,12 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet3
 
-
   ControlPlaneSG:
-  # https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html
+    # https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Cluster communication with worker nodes
       VpcId: !Ref VPC
-
 
 Outputs:
   VPC:
@@ -151,14 +145,12 @@ Outputs:
     Export:
       Name: !Sub ${EnvironmentName}-PUB-RT
 
-
   PublicSubnets:
     Description: A list of the public subnets
-    Value: !Join [",", [!Ref PublicSubnet1, !Ref PublicSubnet2, !Ref PrivateSubnet3]]
+    Value:
+      !Join [",", [!Ref PublicSubnet1, !Ref PublicSubnet2, !Ref PrivateSubnet3]]
     Export:
       Name: !Sub ${EnvironmentName}-PUB-NETS
-
- 
 
   PublicSubnet1:
     Description: A reference to the public subnet in the 1st Availability Zone
@@ -178,9 +170,8 @@ Outputs:
     Export:
       Name: !Sub ${EnvironmentName}-PUB3-SN
 
-  
   ControlPlaneSG:
     Description: Security group for the cluster control plane communication with worker nodes
-    Value: !Join [ ",", [ !Ref ControlPlaneSG ] ]
+    Value: !Join [",", [!Ref ControlPlaneSG]]
     Export:
       Name: !Sub ${EnvironmentName}-ControlPlaneSG
