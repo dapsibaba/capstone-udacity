@@ -38,7 +38,7 @@ Resources:
         SubnetIds:
           Fn::Split:
             - ","
-            - Fn::ImportValue: !Sub ${EnvironmentName}-ALL-NETS
+            - Fn::ImportValue: !Sub ${EnvironmentName}-PUB-NETS
 
 Outputs:
   ClusterId:
