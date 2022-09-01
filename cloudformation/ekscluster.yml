@@ -17,7 +17,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-            # This is eks.amazonaws.com AND NOT ec2.amazonaws.com
+            # NOTE to self: This is eks.amazonaws.com AND NOT ec2.amazonaws.com
               Service:
                 - eks.amazonaws.com
             Action:
@@ -25,71 +25,16 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
 
-  ControlPlaneSG:
-  # https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-    # By default, Amazon EKS applies the cluster security group to the instances in your node group to facilitate communication between nodes and the control plane. see under "using custom security group" : https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html
-      GroupDescription: Allows easy communication between nodes and control plane. 
-      VpcId:
-        Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 10250
-          ToPort: 10250
-          CidrIp: 0.0.0.0/0         
-        - IpProtocol: tcp
-          FromPort: 53
-          ToPort: 53
-          CidrIp: 0.0.0.0/0
-      # Allow incoming HTTPS traffic (TCP/443) from worker nodes (for API server)
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
-        # Allow outgoing kubelet traffic (TCP/10250) to worker nodes         
-        - IpProtocol: tcp
-          FromPort: 10250
-          ToPort: 10250
-          CidrIp: 0.0.0.0/0         
-        - IpProtocol: tcp
-          FromPort: 53
-          ToPort: 53
-          CidrIp: 0.0.0.0/0
-        # Allow outgoing HTTPS traffic (TCP/443) to worker nodes (for pods running extension API servers)
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-
 
   EKSCluster:
     Type: AWS::EKS::Cluster
-    DependsOn: ControlPlaneSG
     Properties:
       Version: "1.23"
       Name: !Sub ${EnvironmentName}-cluster
       RoleArn: !GetAtt myAmazonEKSClusterRole.Arn
       ResourcesVpcConfig:
         SecurityGroupIds:
-          - !GetAtt ControlPlaneSG.GroupId
+          - Fn::ImportValue: ${EnvironmentName}-ControlPlaneSG
         SubnetIds:
           Fn::Split:
             - ","

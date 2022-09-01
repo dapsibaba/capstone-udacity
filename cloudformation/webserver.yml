@@ -16,4 +16,4 @@ spec:
     spec:
       containers:
       - name: mlserver
-        image: daporubs/devopsmlapp
+        image: daporubs/devopsmlapp:latest

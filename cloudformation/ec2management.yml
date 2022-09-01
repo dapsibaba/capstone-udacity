@@ -3,7 +3,7 @@ Description: >
 
 Parameters:
   EnvironmentName:
-    Default: capstoneudacity
+    Default: udacitycapstone
     Type: String
   EKSoptimizedAMI:
     Description: Amazon EKS-Optimized Amazon Linux AMI (This AMI already has kubectl installed in it)
