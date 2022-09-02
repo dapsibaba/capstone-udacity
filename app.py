@@ -20,10 +20,10 @@ def scale(payload):
     scaled_adhoc_predict = scaler.transform(payload.astype(float))
     return scaled_adhoc_predict
 
-
 @app.route("/")
+app.roue("/")
 def home():
-    html = "<h3>Sklearn Prediction Home</h3>"
+    html = "<h1>Adeniyi's Capstone DevOps Project: Housing Prediction Home</h1>"
     return html.format(format)
 
 

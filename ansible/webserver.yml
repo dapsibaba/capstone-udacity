@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: mlserver
-        image: daporubs/devopsmlapp:latest
+        image: daporubs/devopsmlapp:${CIRCLE_WORKFLOW_ID:0:7}
         ports: 
           - containerPort: 8000
 

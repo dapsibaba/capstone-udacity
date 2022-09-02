@@ -35,6 +35,10 @@ jobs:
     docker-build-upload:
       docker:
         - image: circleci/golang:1.15
+      parameters:
+        docker_tag:
+          type: string
+          default: ${CIRCLE_WORKFLOW_ID:0:7}
       steps:
         - checkout
         - setup_remote_docker
@@ -42,13 +46,13 @@ jobs:
             name: Build docker image
   # (https://circleci.com/blog/build-cicd-piplines-using-docker/#:~:text=Before%20we%20get%20started%2C%20you%20will%20need%3A%20A,key%20to%20your%20account%20using%20the%20CircleCI%20portal.)
             command: |
-              docker build -t $DOCKER_LOGIN/devopsmlapp:latest .
+              docker build -t $DOCKER_LOGIN/devopsmlapp:docker_tag .
               docker image ls
         - run:
             name: Push docker image
             command: |
               echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
-              docker image push $DOCKER_LOGIN/devopsmlapp:latest
+              docker image push $DOCKER_LOGIN/devopsmlapp:docker_tag
 
     deploy-infrastructure:
       docker:
