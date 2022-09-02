@@ -125,7 +125,7 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filter "Name=tag:Name, Values=<< parameters.project_id >>-management" \
               --output text >> ansible/inventory.txt
-            cat ~/inventory.txt
+            cat ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths: [ansible/inventory.txt]
