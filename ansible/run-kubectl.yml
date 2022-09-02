@@ -24,8 +24,8 @@
     
     - name: copy files to kubernetes-files folder
       copy:
-        src: cloudformation/webserver.yml
-        dest: ~/kubernetes-files
+        src: webserver.yml
+        dest: "~/kubernetes-files/webserver.yml"
 
     - name: deploy the pods
       shell:
