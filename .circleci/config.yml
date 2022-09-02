@@ -50,92 +50,92 @@ jobs:
               echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
               docker image push $DOCKER_LOGIN/devopsmlapp:latest
 
-  deploy-infrastructure:
-    docker:
-      - image: amazon/aws-cli
-    parameters: &parameter
-      project_id:
-        type: string
-        default: udacitycapstone
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: yum install -y tar gzip
-      - run:
-          name: Build the networks(VPC and Subnets etc that meet the EKS requirements)
-          command: |
-            aws cloudformation deploy \
-              --template-file cloudformation/network.yml \
-              --tags project=<< parameters.project_id >> \
-              --stack-name "<< parameters.project_id >>-networks" \
-              --parameter-overrides file://cloudformation/network-parameters.json
-      - run:
-          name: Create EKS Cluster
-          command: |
-            aws cloudformation deploy \
-              --template-file cloudformation/ekscluster.yml \
-              --tags project=<< parameters.project_id >>\
-              --stack-name "<< parameters.project_id >>-eks-cluster" \
-              --capabilities CAPABILITY_NAMED_IAM
-          no_output_timeout: 15m
-      - run:
-          name: Create Nodegroup exists
-          command: |
-            aws cloudformation deploy \
-              --template-file cloudformation/eksnodegroup.yml \
-              --tags project=<< parameters.project_id >> \
-              --stack-name "<< parameters.project_id >>-eks-nodegroup" \
-              --capabilities CAPABILITY_NAMED_IAM
-      - run:
-          name: Create management EC2
-          command: |
-            aws cloudformation deploy \
-              --template-file cloudformation/ec2management.yml \
-              --tags project=<< parameters.project_id >> \
-              --stack-name "<< parameters.project_id >>-management-instance"
+    deploy-infrastructure:
+      docker:
+        - image: amazon/aws-cli
+      parameters: &parameter
+        project_id:
+          type: string
+          default: udacitycapstone
+      steps:
+        - checkout
+        - run:
+            name: Install dependencies
+            command: yum install -y tar gzip
+        - run:
+            name: Build the networks(VPC and Subnets etc that meet the EKS requirements)
+            command: |
+              aws cloudformation deploy \
+                --template-file cloudformation/network.yml \
+                --tags project=<< parameters.project_id >> \
+                --stack-name "<< parameters.project_id >>-networks" \
+                --parameter-overrides file://cloudformation/network-parameters.json
+        - run:
+            name: Create EKS Cluster
+            command: |
+              aws cloudformation deploy \
+                --template-file cloudformation/ekscluster.yml \
+                --tags project=<< parameters.project_id >>\
+                --stack-name "<< parameters.project_id >>-eks-cluster" \
+                --capabilities CAPABILITY_NAMED_IAM
+            no_output_timeout: 15m
+        - run:
+            name: Create Nodegroup exists
+            command: |
+              aws cloudformation deploy \
+                --template-file cloudformation/eksnodegroup.yml \
+                --tags project=<< parameters.project_id >> \
+                --stack-name "<< parameters.project_id >>-eks-nodegroup" \
+                --capabilities CAPABILITY_NAMED_IAM
+        - run:
+            name: Create management EC2
+            command: |
+              aws cloudformation deploy \
+                --template-file cloudformation/ec2management.yml \
+                --tags project=<< parameters.project_id >> \
+                --stack-name "<< parameters.project_id >>-management-instance"
 
-      - run:
-          name: Add management ec2 ip to inventory for ansible
-          command: |
-            aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filter "Name=tag:Name, Values=<< parameters.project_id >>-management" \
-              --output text >> ansible/inventory.txt
-            cat ansible/inventory.txt
-      - persist_to_workspace:
-          root: ~/
-          paths: [project/ansible/inventory.txt]
+        - run:
+            name: Add management ec2 ip to inventory for ansible
+            command: |
+              aws ec2 describe-instances \
+                --query 'Reservations[*].Instances[*].PublicIpAddress' \
+                --filter "Name=tag:Name, Values=<< parameters.project_id >>-management" \
+                --output text >> ansible/inventory.txt
+              cat ansible/inventory.txt
+        - persist_to_workspace:
+            root: ~/
+            paths: [project/ansible/inventory.txt]
 
-  deploy-k8s-components:
-    docker:
-      - image: python:3.7-alpine3.11
-    parameters: *parameter
-    steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints: ["d4:ef:11:47:7d:97:9f:cb:ff:ce:3c:6d:f2:35:c7:7b"]
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update ansible
+    deploy-k8s-components:
+      docker:
+        - image: python:3.7-alpine3.11
+      parameters: *parameter
+      steps:
+        - checkout
+        - add_ssh_keys:
+            fingerprints: ["d4:ef:11:47:7d:97:9f:cb:ff:ce:3c:6d:f2:35:c7:7b"]
+        - attach_workspace:
+            at: ~/
+        - run:
+            name: Install dependencies
+            command: |
+              apk add --update ansible
 
-      - run:
-          name: configure management server - Set up AWS configure and Kubectl updateconfig
-          no_output_timeout: 15m
-          command: |
-            cd ansible
-            cat inventory.txt
-            ansible-playbook configure-server.yml -i inventory.txt
+        - run:
+            name: configure management server - Set up AWS configure and Kubectl updateconfig
+            no_output_timeout: 15m
+            command: |
+              cd ansible
+              cat inventory.txt
+              ansible-playbook configure-server.yml -i inventory.txt
 
-      - run:
-          name: Create your running application pods
-          command: |
-            cd ansible
-            cat inventory.txt
-            ansible-playbook run-kubectl.yml -i inventory.txt
+        - run:
+            name: Create your running application pods
+            command: |
+              cd ansible
+              cat inventory.txt
+              ansible-playbook run-kubectl.yml -i inventory.txt
 
 workflows:
   workflowname:
