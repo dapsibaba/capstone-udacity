@@ -145,7 +145,7 @@ workflows:
     jobs:
       - app-build-and-lint
       - docker-build-upload
-      - deploy-infrastructure
+      - deploy-infrastructure:
           requires: [app-build-and-lint]
-      - deploy-k8s-components
+      - deploy-k8s-components:
           requires: [docker-build-upload, deploy-infrastructure]
