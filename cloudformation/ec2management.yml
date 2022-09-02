@@ -17,7 +17,7 @@ Resources:
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub management-${EnvironmentName}
+      GroupName: !Sub ${EnvironmentName}-management
       GroupDescription: Allow port 22 and port 80.
       VpcId:
         Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
@@ -39,7 +39,7 @@ Resources:
       ImageId: !Ref EKSoptimizedAMI
       Tags:
         - Key: Name
-          Value: !Sub management-${EnvironmentName}
+          Value: !Sub ${EnvironmentName}-management
       BlockDeviceMappings:
         - DeviceName: "/dev/xvda"
           Ebs:

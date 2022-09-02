@@ -19,6 +19,10 @@ Parameters:
     Default: 3
     Type: Number
 
+  nodeLabels:
+    Default: blue-nodes
+    Type: String
+
   KeyPairName:
     Description: EC2 key pair name (for SSH-access to the worker node instances)
     Type: AWS::EC2::KeyPair::KeyName
@@ -62,6 +66,8 @@ Resources:
         MinSize: !Ref MinSize
         MaxSize: !Ref MaxSize
         DesiredSize: !Ref DesiredSize
+      Labels:
+        Name: !Ref nodeLabels
       Subnets:
         Fn::Split:
           - ","

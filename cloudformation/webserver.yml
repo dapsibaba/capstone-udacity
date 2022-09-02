@@ -3,17 +3,33 @@ kind: Deployment
 metadata:
   name: webserver-deployment
   labels:
-    app: webservers
+    app: mldeploy
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: webservers
+      app: mldeploy
   template:
     metadata:
       labels:
-        app: webservers
+        app: mldeploy
     spec:
       containers:
       - name: mlserver
         image: daporubs/devopsmlapp:latest
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webserver-deployment-service
+spec:
+  selector:
+    app: mldeploy
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+      nodePort: 30000
