@@ -32,3 +32,7 @@
       shell:
         cmd: kubectl apply -f webserver.yml
         chdir: ~/kubernetes-files
+
+    - name: get deployed pods
+      shell:
+        cmd: kubectl get pods
