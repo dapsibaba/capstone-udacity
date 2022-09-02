@@ -1,112 +1,56 @@
 version: 2.1
 # The EKS cluster was created following the instruction here: https://docs.aws.amazon.com/eks/latest/userguide/getting-started-console.html
 jobs:
-  #   app-build-and-lint:
-  #     docker:
-  #       # Use the same Docker base as the project
-  #       - image: python:3.7.3-stretch
+    app-build-and-lint:
+      docker:
+        # Use the same Docker base as the project
+        - image: python:3.7.3-stretch
 
-  #     working_directory: ~/repo
+      working_directory: ~/repo
 
-  #     steps:
-  #       - checkout
-  #       # Download and cache dependencies
-  #       - restore_cache:
-  #           keys:
-  #             - v1-dependencies-{{ checksum "requirements.txt" }}
-  #             # fallback to using the latest cache if no exact match is found
-  #             - v1-dependencies-
-  #       - run:
-  #           name: install dependencies
-  #           command: |
-  #             python3 -m venv venv
-  #             . venv/bin/activate
-  #             make install
-  #       - save_cache:
-  #           paths:
-  #             - ./venv
-  #           key: v1-dependencies-{{ checksum "requirements.txt" }}
-  #       - run:
-  #           name: run lint
-  #           command: |
-  #             . venv/bin/activate
-  #             make lint
+      steps:
+        - checkout
+        # Download and cache dependencies
+        - restore_cache:
+            keys:
+              - v1-dependencies-{{ checksum "requirements.txt" }}
+              # fallback to using the latest cache if no exact match is found
+              - v1-dependencies-
+        - run:
+            name: install dependencies
+            command: |
+              python3 -m venv venv
+              . venv/bin/activate
+              make install
+        - save_cache:
+            paths:
+              - ./venv
+            key: v1-dependencies-{{ checksum "requirements.txt" }}
+        - run:
+            name: run lint
+            command: |
+              . venv/bin/activate
+              make lint
 
-  #   docker-build-upload:
-  #     docker:
-  #       - image: circleci/golang:1.15
-  #     steps:
-  #       - checkout
-  #       - setup_remote_docker
-  #       - run:
-  #           name: Build docker image
-  # # (https://circleci.com/blog/build-cicd-piplines-using-docker/#:~:text=Before%20we%20get%20started%2C%20you%20will%20need%3A%20A,key%20to%20your%20account%20using%20the%20CircleCI%20portal.)
-  #           command: |
-  #             docker build -t $DOCKER_LOGIN/devopsmlapp:latest .
-  #             docker image ls
-  #       - run:
-  #           name: Push docker image
-  #           command: |
-  #             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
-  #             docker image push $DOCKER_LOGIN/devopsmlapp:latest
+    docker-build-upload:
+      docker:
+        - image: circleci/golang:1.15
+      steps:
+        - checkout
+        - setup_remote_docker
+        - run:
+            name: Build docker image
+  # (https://circleci.com/blog/build-cicd-piplines-using-docker/#:~:text=Before%20we%20get%20started%2C%20you%20will%20need%3A%20A,key%20to%20your%20account%20using%20the%20CircleCI%20portal.)
+            command: |
+              docker build -t $DOCKER_LOGIN/devopsmlapp:latest .
+              docker image ls
+        - run:
+            name: Push docker image
+            command: |
+              echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+              docker image push $DOCKER_LOGIN/devopsmlapp:latest
 
-  # deploy-infrastructure:
-  #   docker:
-  #     - image: amazon/aws-cli
-  #   parameters: &parameter
-  #     project_id:
-  #       type: string
-  #       default: udacitycapstone
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Install dependencies
-  #         command: yum install -y tar gzip
-  #     - run:
-  #         name: Build the networks(VPC and Subnets etc that meet the EKS requirements)
-  #         command: |
-  #           aws cloudformation deploy \
-  #             --template-file cloudformation/network.yml \
-  #             --tags project=<< parameters.project_id >> \
-  #             --stack-name "<< parameters.project_id >>-networks" \
-  #             --parameter-overrides file://cloudformation/network-parameters.json
-  #     - run:
-  #         name: Create EKS Cluster
-  #         command: |
-  #           aws cloudformation deploy \
-  #             --template-file cloudformation/ekscluster.yml \
-  #             --tags project=<< parameters.project_id >>\
-  #             --stack-name "<< parameters.project_id >>-eks-cluster" \
-  #             --capabilities CAPABILITY_NAMED_IAM
-  #         no_output_timeout: 15m
-  #     - run:
-  #         name: Create Nodegroup exists
-  #         command: |
-  #           aws cloudformation deploy \
-  #             --template-file cloudformation/eksnodegroup.yml \
-  #             --tags project=<< parameters.project_id >> \
-  #             --stack-name "<< parameters.project_id >>-eks-nodegroup" \
-  #             --capabilities CAPABILITY_NAMED_IAM
-  #     - run:
-  #         name: Create management EC2
-  #         command: |
-  #           aws cloudformation deploy \
-  #             --template-file cloudformation/ec2management.yml \
-  #             --tags project=<< parameters.project_id >> \
-  #             --stack-name "<< parameters.project_id >>-management-instance"
-  #     - run:
-  #         name: Add management ec2 ip to inventory for ansible
-  #         command: |
-  #           aws ec2 describe-instances \
-  #             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-  #             --filter "Name=tag:Name, Values=<< parameters.project_id >>-management" \
-  #             --output text >> ~/inventory.txt
-  #           cat ~/inventory.txt
-  #     - persist_to_workspace:
-  #         root: ~/
-  #         paths: [inventory.txt]
-
-  management-extract:
+  deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
     parameters: &parameter
@@ -118,6 +62,39 @@ jobs:
       - run:
           name: Install dependencies
           command: yum install -y tar gzip
+      - run:
+          name: Build the networks(VPC and Subnets etc that meet the EKS requirements)
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/network.yml \
+              --tags project=<< parameters.project_id >> \
+              --stack-name "<< parameters.project_id >>-networks" \
+              --parameter-overrides file://cloudformation/network-parameters.json
+      - run:
+          name: Create EKS Cluster
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/ekscluster.yml \
+              --tags project=<< parameters.project_id >>\
+              --stack-name "<< parameters.project_id >>-eks-cluster" \
+              --capabilities CAPABILITY_NAMED_IAM
+          no_output_timeout: 15m
+      - run:
+          name: Create Nodegroup exists
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/eksnodegroup.yml \
+              --tags project=<< parameters.project_id >> \
+              --stack-name "<< parameters.project_id >>-eks-nodegroup" \
+              --capabilities CAPABILITY_NAMED_IAM
+      - run:
+          name: Create management EC2
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudformation/ec2management.yml \
+              --tags project=<< parameters.project_id >> \
+              --stack-name "<< parameters.project_id >>-management-instance"
+
       - run:
           name: Add management ec2 ip to inventory for ansible
           command: |
@@ -144,7 +121,6 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible
-            pip install awscli
 
       - run:
           name: configure management server - Set up AWS configure and Kubectl updateconfig
@@ -161,20 +137,13 @@ jobs:
             cat inventory.txt
             ansible-playbook run-kubectl.yml -i inventory.txt
 
-# workflows:
-#   workflowname:
-#     jobs:
-#       - app-build-and-lint
-#       - docker-build-upload:
-#           requires: [app-build-and-lint]
-#       - deploy-infrastructure:
-#           requires: [app-build-and-lint]
-#       - deploy-k8s-components:
-#           requires: [docker-build-upload, deploy-infrastructure]
-
 workflows:
   workflowname:
     jobs:
-      - management-extract
+      - app-build-and-lint
+      - docker-build-upload:
+          requires: [app-build-and-lint]
+      - deploy-infrastructure:
+          requires: [app-build-and-lint]
       - deploy-k8s-components:
-          requires: [management-extract]
+          requires: [docker-build-upload, deploy-infrastructure]

@@ -61,7 +61,7 @@ Resources:
   #     ImageId: !Ref EKSoptimizedAMI
   #     Tags:
   #       - Key: Name
-  #         Value: !Sub management-${EnvironmentName}
+  #         Value: !Sub ${EnvironmentName}-management
   #     BlockDeviceMappings:
   #       - DeviceName: "/dev/xvda"
   #         Ebs:

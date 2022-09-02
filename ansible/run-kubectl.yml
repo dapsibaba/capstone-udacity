@@ -7,6 +7,7 @@
   become_user: root
   gather_facts: false
   vars:
+  # when you ssh into a server, it ask you to answer yes/no/ blah blah... this [ansible_host_key_checking: false] switches that off or answers yes whatever it anyways prevent that from holding up your pipeline
     - ansible_host_key_checking: false
     - ansible_python_interpreter: /usr/bin/python
     - ansible_stdout_callback: yaml
@@ -14,7 +15,7 @@
     - AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY')}}"
     - AWS_DEFAULT_REGION: "{{ lookup('env', 'AWS_DEFAULT_REGION')}}"
     - AWS_SESSION_TOKEN: "{{ lookup('env', 'AWS_SESSION_TOKEN')}}"
-    - EnvironmentName: udacitycapstone
+
   tasks:
     - name: running kubectl commands
       file:
