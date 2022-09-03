@@ -158,7 +158,7 @@ jobs:
               ansible-playbook deployment.yml -i inventory.txt
 
 
-    update-docker-app:
+    rolling-deployment:
       docker:
         - image: python:3.7-alpine3.11
       steps:
@@ -194,5 +194,5 @@ workflows:
           requires: [deploy-cluster-and-nodegroups]
       - deploy-k8s-components:
           requires: [deploy-management-server]
-      - update-docker-app:
+      - rolling-deployment:
           requires: [deploy-k8s-components]

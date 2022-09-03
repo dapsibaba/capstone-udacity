@@ -1,7 +1,7 @@
 apiVersion: apps/v1 
 kind: Deployment
 metadata:
-  name: webserver-deployment
+  name: mlserver-deployment
   labels:
     app: mldeploy
 spec:
@@ -15,7 +15,7 @@ spec:
         app: mldeploy
     spec:
       containers:
-      - name: mldeploy
+      - name: mlimagename
         image: daporubs/devopsmlapp
         ports: 
           - containerPort: 8000
@@ -24,7 +24,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: webserver-deployment-service
+  name: mlserver-deployment-service
 spec:
   selector:
     app: mldeploy

@@ -1,5 +1,5 @@
 ---
-- name: "Create your running pods"
+- name: "update pod image"
   hosts: management
   user: ec2-user
   become: true
@@ -16,24 +16,12 @@
     - AWS_DEFAULT_REGION: "{{ lookup('env', 'AWS_DEFAULT_REGION')}}"
     - AWS_SESSION_TOKEN: "{{ lookup('env', 'AWS_SESSION_TOKEN')}}"
     - docker_tag: "{{ lookup('env', 'CIRCLE_WORKFLOW_ID') }}"
-    - EnvironmentName: udacitycapstone
 
   tasks:
-    - name: update kubeconfig file
-      shell: "aws eks update-kubeconfig --region {{ AWS_DEFAULT_REGION }} --name {{ EnvironmentName }}-cluster"
-
-    - name: running kubectl commands
-      file:
-        path: ~/kubernetes-files
-        state: directory
-        mode: 0755
-    
-    - name: copy k8s deployment/service file to kubernetes-files folder
-      copy:
-        src: k8s-capstone-deployment.yml
-        dest: "~/kubernetes-files/k8s-capstone-deployment.yml"
-
-    - name: deploy the pods
+    - name: update the image running in pods
       shell:
-        cmd: kubectl set image deployment/k8s-capstone-deployment mldeploy=daporubs/devopsmlapp:{{ docker_tag }}
+# These names- mlserver-deployment and mlservername -are from the deployment yaml file
+        cmd: "kubectl set image deployment/mlserver-deployment mlimagename=daporubs/devopsmlapp:{{ docker_tag }}"
         chdir: ~/kubernetes-files
+
+  
