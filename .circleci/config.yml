@@ -184,14 +184,15 @@ workflows:
   workflowname:
     jobs:
       - app-build-and-lint
-      - networks-build
       - docker-build-and-upload:
           requires: [app-build-and-lint]
+      - networks-build:
+          requires: [docker-build-and-upload]
       - deploy-cluster-and-nodegroups:
           requires: [networks-build]
       - deploy-management-server:
           requires: [deploy-cluster-and-nodegroups]
       - deploy-k8s-components:
-          requires: [docker-build-and-upload, deploy-management-server, deploy-cluster-and-nodegroups]
+          requires: [deploy-management-server]
       - update-docker-app:
           requires: [deploy-k8s-components]
