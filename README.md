@@ -2,16 +2,18 @@
 
 ### About the Project
 This project unifies the core skills and knowledge acquired through the course of the program. I operationalize a Machine Learning (ML) flask app, deploying it on AWS. The following are some of the tools used in this project:
-    - CircleCI
-    - Ansible
-    - AWS Cloudformation 
-    - Docker
-    - Kubernetes
-    - Python
-    - Flask
-    - Linux
-    - AWS EKS
-The project directions are below
+- CircleCI
+- Ansible
+- AWS Cloudformation
+- Docker
+- Kubernetes
+- Python
+- Flask
+- Git
+- Linux
+
+
+## These are the project directions
 ### Step 1: Propose and Scope the Project
 - Plan what your pipeline will look like.
 - Decide which options you will include in your Continuous Integration phase. Use either Circle CI or Jenkins.
