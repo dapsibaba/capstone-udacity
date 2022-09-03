@@ -1,60 +1,45 @@
-## EDIT TO README FOR CAPSTONE PROJECT
+## Udacity DevOps Nanodegree Capstone Project
 
-In this project, you will prove your mastery of the following learning objectives:
+### About the Project
+This project unifies the core skills and knowledge acquired through the course of the program. I operationalize a Machine Learning (ML) flask app, deploying it on AWS. The following are some of the tools used in this project:
+- CircleCI
+- Ansible
+- AWS Cloudformation
+- Docker
+- Kubernetes
+- Python
+- Flask
+- Git
+- Linux
 
-- Explain the fundamentals and benefits of CI/CD to achieve, build, and deploy automation for cloud-based software products.
-- Utilize Deployment Strategies to design and build CI/CD pipelines that support Continuous Delivery processes.
-- Utilize a configuration management tool to accomplish deployment to cloud-based servers.
-- Surface critical server errors for diagnosis using centralized structured logging..
 
-![Diagram of CI/CD Pipeline we will be building.](udapeople.png)
+## These are the project directions
+### Step 1: Propose and Scope the Project
+- Plan what your pipeline will look like.
+- Decide which options you will include in your Continuous Integration phase. Use either Circle CI or Jenkins.
+- Pick a deployment type - either rolling deployment or blue/green deployment.
+- For the Docker application you can either use an application which you come up with, or use an open-source application pulled from the Internet, or if you have no idea, you can use an Nginx “Hello World, my name is (student name)” application.
 
-### Instructions
+### Step 2: Use Jenkins or Circle CI, and implement blue/green or rolling deployment.
+- If you're using Jenkins, create your Jenkins master box and install the plugins you will need.
+- If you're using Circle CI, set up your circle CI account and connect your git repository.
+- Set up your environment to which you will deploy code.
 
-- [Selling CI/CD](instructions/0-selling-cicd.md)
-- [Getting Started](instructions/1-getting-started.md)
-- [Deploying Working, Trustworthy Software](instructions/2-deploying-trustworthy-code.md)
-- [Configuration Management](instructions/3-configuration-management.md)
-- [Turn Errors into Sirens](instructions/4-turn-errors-into-sirens.md)
+### Step 3: Pick AWS Kubernetes as a Service, or build your own Kubernetes cluster.
+- Use Ansible or CloudFormation to build your “infrastructure”; i.e., the Kubernetes Cluster.
+- It should create the EC2 instances (if you are building your own), set the correct networking settings, and deploy software to these instances.
+- As a final step, the Kubernetes cluster will need to be initialized. The Kubernetes cluster initialization can either be done by hand, or with Ansible/Cloudformation at the student’s discretion.
 
-### Project Submission
+### Step 4: Build your pipeline
+- Construct your pipeline in your GitHub repository.
+- Set up all the steps that your pipeline will include.
+- Configure a deployment pipeline.
+- Include your Dockerfile/source code in the Git repository.
+- Include with your Linting step both a failed Linting screenshot and a successful Linting screenshot to show the Linter working properly.
 
-For your submission, please submit the following:
+### Step 5: Test your pipeline
+- Perform builds on your pipeline.
+- Verify that your pipeline works as you designed it.
+- Take a screenshot of the Circle CI or Jenkins pipeline showing deployment, and a screenshot of your AWS EC2 page showing the newly created (for blue/green) or modified (for rolling) instances. Make sure you name your instances differently between blue and green deployments.
 
-- A text file named `urls.txt` including:
-  1. Public Url to GitHub repository (not private) [URL01]
-  1. Public URL for your S3 Bucket (aka, your green candidate front-end) [URL02]
-  1. Public URL for your CloudFront distribution (aka, your blue production front-end) [URL03]
-  1. Public URLs to deployed application back-end in EC2 [URL04]
-  1. Public URL to your Prometheus Server [URL05]
-- Your screenshots in JPG or PNG format, named using the screenshot number listed in the instructions. These screenshots should be included in your code repository in the root folder.
-
-  1. Job failed because of compile errors. [SCREENSHOT01]
-  1. Job failed because of unit tests. [SCREENSHOT02]
-  1. Job that failed because of vulnerable packages. [SCREENSHOT03]
-  1. An alert from one of your failed builds. [SCREENSHOT04]
-  1. Appropriate job failure for infrastructure creation. [SCREENSHOT05]
-  1. Appropriate job failure for the smoke test job. [SCREENSHOT06]
-  1. Successful rollback after a failed smoke test. [SCREENSHOT07]
-  1. Successful promotion job. [SCREENSHOT08]
-  1. Successful cleanup job. [SCREENSHOT09]
-  1. Only deploy on pushed to `master` branch. [SCREENSHOT10]
-  1. Provide a screenshot of a graph of your EC2 instance including available memory, available disk space, and CPU usage. [SCREENSHOT11]
-  1. Provide a screenshot of an alert that was sent by Prometheus. [SCREENSHOT12]
-
-- Your presentation should be in PDF format named "presentation.pdf" and should be included in your code repository root folder.
-
-Before you submit your project, please check your work against the project rubric. If you haven’t satisfied each criterion in the rubric, then revise your work so that you have met all the requirements.
-
-### Built With
-
-- [Circle CI](www.circleci.com) - Cloud-based CI/CD service
-- [Amazon AWS](https://aws.amazon.com/) - Cloud services
-- [AWS CLI](https://aws.amazon.com/cli/) - Command-line tool for AWS
-- [CloudFormation](https://aws.amazon.com/cloudformation/) - Infrastrcuture as code
-- [Ansible](https://www.ansible.com/) - Configuration management tool
-- [Prometheus](https://prometheus.io/) - Monitoring tool
-
-### License
-
-[License](LICENSE.md)
+ 
