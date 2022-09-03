@@ -3,11 +3,8 @@ version: 2.1
 jobs:
     app-build-and-lint:
       docker:
-        # Use the same Docker base as the project
         - image: python:3.7.3-stretch
-
       working_directory: ~/repo
-
       steps:
         - checkout
         # Download and cache dependencies
@@ -32,19 +29,19 @@ jobs:
               . venv/bin/activate
               make lint
 
-    docker-build-upload:
+    docker-build-and-upload:
       docker:
         - image: circleci/golang:1.15
       parameters:
         docker_tag:
           type: string
-          default: ${CIRCLE_WORKFLOW_ID:0:7}
+          default: ${CIRCLE_WORKFLOW_ID}
       steps:
         - checkout
         - setup_remote_docker
         - run:
             name: Build docker image
-  # (https://circleci.com/blog/build-cicd-piplines-using-docker/#:~:text=Before%20we%20get%20started%2C%20you%20will%20need%3A%20A,key%20to%20your%20account%20using%20the%20CircleCI%20portal.)
+        # (https://circleci.com/blog/build-cicd-piplines-using-docker/#:~:text=Before%20we%20get%20started%2C%20you%20will%20need%3A%20A,key%20to%20your%20account%20using%20the%20CircleCI%20portal.)
             command: |
               docker build -t $DOCKER_LOGIN/devopsmlapp:docker_tag .
               docker image ls
@@ -54,7 +51,7 @@ jobs:
               echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
               docker image push $DOCKER_LOGIN/devopsmlapp:docker_tag
 
-    deploy-infrastructure:
+    networks-build:
       docker:
         - image: amazon/aws-cli
       parameters: &parameter
@@ -74,6 +71,16 @@ jobs:
                 --tags project=<< parameters.project_id >> \
                 --stack-name "<< parameters.project_id >>-networks" \
                 --parameter-overrides file://cloudformation/network-parameters.json
+
+    deploy-cluster-and-nodegroups:
+      docker:
+        - image: amazon/aws-cli
+      parameters: *parameter
+      steps:
+        - checkout
+        - run:
+            name: Install dependencies
+            command: yum install -y tar gzip
         - run:
             name: Create EKS Cluster
             command: |
@@ -91,6 +98,16 @@ jobs:
                 --tags project=<< parameters.project_id >> \
                 --stack-name "<< parameters.project_id >>-eks-nodegroup" \
                 --capabilities CAPABILITY_NAMED_IAM
+
+    deploy-management-server:
+      docker:
+        - image: amazon/aws-cli
+      parameters: *parameter
+      steps:
+        - checkout
+        - run:
+            name: Install dependencies
+            command: yum install -y tar gzip
         - run:
             name: Create management EC2
             command: |
@@ -114,7 +131,6 @@ jobs:
     deploy-k8s-components:
       docker:
         - image: python:3.7-alpine3.11
-      parameters: *parameter
       steps:
         - checkout
         - add_ssh_keys:
@@ -139,15 +155,43 @@ jobs:
             command: |
               cd ansible
               cat inventory.txt
-              ansible-playbook run-kubectl.yml -i inventory.txt
+              ansible-playbook deployment.yml -i inventory.txt
+
+
+    update-docker-app:
+      docker:
+        - image: python:3.7-alpine3.11
+      steps:
+        - checkout
+        - add_ssh_keys:
+            fingerprints: ["d4:ef:11:47:7d:97:9f:cb:ff:ce:3c:6d:f2:35:c7:7b"]
+        - attach_workspace:
+            at: ~/
+        - run:
+            name: Install dependencies
+            command: |
+              apk add --update ansible
+
+        - run:
+            name: deploy newest docker image
+            command: |
+              cd ansible
+              cat inventory.txt
+              ansible-playbook update-deployment.yml -i inventory.txt
+
 
 workflows:
   workflowname:
     jobs:
       - app-build-and-lint
-      - docker-build-upload:
+      - networks-build
+      - docker-build-and-upload:
           requires: [app-build-and-lint]
-      - deploy-infrastructure:
-          requires: [app-build-and-lint]
+      - deploy-cluster-and-nodegroups:
+          requires: [networks-build]
+      - deploy-management-server:
+          requires: [deploy-cluster-and-nodegroups]
       - deploy-k8s-components:
-          requires: [docker-build-upload, deploy-infrastructure]
+          requires: [docker-build-and-upload, deploy-management-server, deploy-cluster-and-nodegroups]
+      - update-docker-app:
+          requires: [deploy-k8s-components]

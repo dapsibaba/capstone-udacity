@@ -3,4 +3,5 @@ cloudformation
 README.md
 Dockerfile
 Makefile
+ansible
 LICENSE

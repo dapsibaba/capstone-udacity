@@ -1,0 +1,39 @@
+---
+- name: "Create your running pods"
+  hosts: management
+  user: ec2-user
+  become: true
+  become_method: sudo
+  become_user: root
+  gather_facts: false
+  vars:
+  # when you ssh into a server, it ask you to answer yes/no/ blah blah... this [ansible_host_key_checking: false] switches that off or answers yes whatever it anyways prevent that from holding up your pipeline
+    - ansible_host_key_checking: false
+    - ansible_python_interpreter: /usr/bin/python
+    - ansible_stdout_callback: yaml
+    - AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID')}}"
+    - AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY')}}"
+    - AWS_DEFAULT_REGION: "{{ lookup('env', 'AWS_DEFAULT_REGION')}}"
+    - AWS_SESSION_TOKEN: "{{ lookup('env', 'AWS_SESSION_TOKEN')}}"
+    - docker_tag: "{{ lookup('env', 'CIRCLE_WORKFLOW_ID') }}"
+    - EnvironmentName: udacitycapstone
+
+  tasks:
+    - name: update kubeconfig file
+      shell: "aws eks update-kubeconfig --region {{ AWS_DEFAULT_REGION }} --name {{ EnvironmentName }}-cluster"
+
+    - name: running kubectl commands
+      file:
+        path: ~/kubernetes-files
+        state: directory
+        mode: 0755
+    
+    - name: copy k8s deployment/service file to kubernetes-files folder
+      copy:
+        src: k8s-capstone-deployment.yml
+        dest: "~/kubernetes-files/k8s-capstone-deployment.yml"
+
+    - name: deploy the pods
+      shell:
+        cmd: kubectl set image deployment/k8s-capstone-deployment mldeploy=daporubs/devopsmlapp:{{ docker_tag }}
+        chdir: ~/kubernetes-files

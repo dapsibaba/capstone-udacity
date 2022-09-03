@@ -15,6 +15,7 @@
     - AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY')}}"
     - AWS_DEFAULT_REGION: "{{ lookup('env', 'AWS_DEFAULT_REGION')}}"
     - AWS_SESSION_TOKEN: "{{ lookup('env', 'AWS_SESSION_TOKEN')}}"
+    - docker_tag: "{{ lookup('env', 'CIRCLE_WORKFLOW_ID') }}"
 
   tasks:
     - name: running kubectl commands
@@ -23,16 +24,12 @@
         state: directory
         mode: 0755
     
-    - name: copy files to kubernetes-files folder
+    - name: copy k8s deployment/service file to kubernetes-files folder
       copy:
-        src: webserver.yml
-        dest: "~/kubernetes-files/webserver.yml"
+        src: k8s-capstone-deployment.yml
+        dest: "~/kubernetes-files/k8s-capstone-deployment.yml"
 
     - name: deploy the pods
       shell:
-        cmd: kubectl apply -f webserver.yml
+        cmd: kubectl apply -f k8s-capstone-deployment.yml
         chdir: ~/kubernetes-files
-
-    - name: get deployed pods
-      shell:
-        cmd: kubectl get pods

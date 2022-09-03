@@ -15,8 +15,8 @@ spec:
         app: mldeploy
     spec:
       containers:
-      - name: mlserver
-        image: daporubs/devopsmlapp:${CIRCLE_WORKFLOW_ID:0:7}
+      - name: mldeploy
+        image: daporubs/devopsmlapp
         ports: 
           - containerPort: 8000
 
